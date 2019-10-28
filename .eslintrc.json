@@ -1,0 +1,6 @@
+{
+  "extends": ["@noliaki/eslint-config-typescript-prettier"],
+  "env": {
+    "browser": true
+  }
+}
