@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useCallback } from 'react'
 import Cell from './Cell'
 
 export default (): JSX.Element => {
@@ -7,37 +7,66 @@ export default (): JSX.Element => {
     React.Dispatch<React.SetStateAction<number>>
   ] = useState(3)
 
-  const side: number = useMemo<number>((): number => Math.pow(size, 2), [size])
+  const numbers: (number | undefined)[] = useMemo<(number | undefined)[]>(
+    (): (number | undefined)[] => new Array(Math.pow(size, 4)).fill(undefined),
+    [size]
+  )
 
-  const numbers = useMemo<(number | null)[]>((): (number | null)[] => {
-    const arr: (number | null)[] = []
+  const onChangeNumber: (index: number, val: number) => void = useCallback<
+    (index: number, val: number) => void
+  >(
+    (index: number, val: number): void => {
+      numbers[index] = val
+    },
+    [numbers]
+  )
 
-    for (let i: number = 0, len: number = Math.pow(side, 2); i < len; i++) {
-      arr[i] = null
+  const numbersEl: JSX.Element[] = useMemo<JSX.Element[]>((): JSX.Element[] => {
+    const row: JSX.Element[] = []
+    const side: number = Math.sqrt(numbers.length)
+
+    for (let i: number = 0; i < side; i++) {
+      const col: JSX.Element[] = []
+
+      for (let j: number = 0; j < side; j++) {
+        const index: number = i * side + j
+        col.push(
+          <Cell
+            key={`col${index}`}
+            index={index}
+            val={numbers[index]}
+            onChangeHandler={onChangeNumber}
+          />
+        )
+      }
+
+      row.push(<tr key={`row${i}`}>{col}</tr>)
     }
 
-    return arr
-  }, [size, side])
+    return row
+  }, [numbers])
 
   return (
     <>
-      <header>
-        <input
-          type="number"
-          name="num"
-          id="num"
-          value={size}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-            event.stopPropagation()
-            setSize(parseInt(event.currentTarget.value, 10))
-          }}
-        />
-      </header>
-      {numbers.map(
-        (val: number | null, i: number): JSX.Element => (
-          <Cell key={i} index={val} />
-        )
-      )}
+      <div className="m-4">
+        <header>
+          <input
+            type="number"
+            name="num"
+            id="num"
+            min="2"
+            className="border py-1 px-2"
+            value={size}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+              event.stopPropagation()
+              setSize(Math.max(parseInt(event.currentTarget.value, 10), 2))
+            }}
+          />
+        </header>
+        <table className="table-fixed w-full mt-4">
+          <tbody>{numbersEl}</tbody>
+        </table>
+      </div>
     </>
   )
 }
