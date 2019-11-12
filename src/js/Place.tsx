@@ -35,6 +35,7 @@ export default (): JSX.Element => {
             key={`col${index}`}
             index={index}
             val={numbers[index]}
+            size={size}
             onChangeHandler={onChangeNumber}
           />
         )
